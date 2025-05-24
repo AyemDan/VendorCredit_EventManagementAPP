@@ -26,6 +26,8 @@ if (string.IsNullOrEmpty(connectionString))
 
 // Register services
 builder.Services.AddScoped<IEventService, EventService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
+
 
 var app = builder.Build();
 

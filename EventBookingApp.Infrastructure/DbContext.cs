@@ -10,6 +10,7 @@ namespace EventBookingApp.Infrastructure
 
         public DbSet<User> Users => Set<User>();
         public DbSet<Event> Events => Set<Event>();
+        public DbSet<Booking> Bookings => Set<Booking>();
         public DbSet<Wallet> Wallets => Set<Wallet>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

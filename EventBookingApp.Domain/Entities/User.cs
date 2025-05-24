@@ -10,6 +10,6 @@
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public Wallet? Wallet { get; set; }
-        public ICollection<EventBooking> Bookings { get; set; } = new List<EventBooking>();
+        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }
