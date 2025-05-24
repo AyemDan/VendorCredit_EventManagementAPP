@@ -16,6 +16,5 @@ namespace EventBookingApp.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
         }
-
     }
 }

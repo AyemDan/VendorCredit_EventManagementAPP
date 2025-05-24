@@ -6,6 +6,7 @@ namespace EventBookingApp.Domain.Entities
 
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
+        public string? OrganizerId { get; set; }
 
         public DateTime Date { get; set; }
         public string Location { get; set; } = string.Empty;
@@ -14,8 +15,7 @@ namespace EventBookingApp.Domain.Entities
 
         public int Capacity { get; set; }
 
-
         public ICollection<EventBooking> Bookings { get; set; } = new List<EventBooking>();
+        public List<TicketCategory> TicketCategories { get; set; } = new();
     }
-
 }
