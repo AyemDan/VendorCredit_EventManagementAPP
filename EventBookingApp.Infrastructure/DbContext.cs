@@ -48,8 +48,5 @@ public class AppDbContext : DbContext
         }
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-
-    }
+    protected override void OnModelCreating(ModelBuilder modelBuilder) { }
 }

@@ -19,7 +19,7 @@ public class BookingController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Book(CreateBookingDto dto)
     {
-        var userId = User.Identity?.Name; // Or from claims
+        var userId = User.Identity?.Name;
         if (userId == null)
             return Unauthorized();
 

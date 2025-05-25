@@ -8,3 +8,4 @@ public interface IBookingService
     Task<IEnumerable<BookingDto>> GetBookingsByUserAsync(Guid userId);
     Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, string? reason = null);
 }
+

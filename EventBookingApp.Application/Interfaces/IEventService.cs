@@ -8,6 +8,6 @@ public interface IEventService
     Task<IEnumerable<EventDto>> GetAllEventsAsync();
     Task<EventDto?> GetEventByIdAsync(Guid id);
     Task<EventDto?> UpdateEventAsync(Guid id, UpdateEventDto dto, Guid userId);
-    Task<bool> DeleteEventAsync(Guid id);
+    Task<bool> DeleteEventAsync(Guid id, Guid userId);
     Task<IEnumerable<EventDto>> GetEventsByOrganizerAsync(string organizerId);
 }

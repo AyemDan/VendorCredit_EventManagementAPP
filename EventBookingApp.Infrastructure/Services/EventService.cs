@@ -58,15 +58,17 @@ public class EventService : IEventService
         evt.Date = dto.Date ?? evt.Date;
         evt.Location = dto.Location ?? evt.Location;
 
-
         await _context.SaveChangesAsync();
         return ToDto(evt);
     }
 
-    public async Task<bool> DeleteEventAsync(Guid id)
+    public async Task<bool> DeleteEventAsync(Guid id, Guid userId)
     {
         var evt = await _context.Events.FindAsync(id);
         if (evt == null)
+            return false;
+
+        if (evt.OrganizerId != userId.ToString())
             return false;
 
         _context.Events.Remove(evt);

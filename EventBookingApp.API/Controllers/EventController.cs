@@ -60,7 +60,10 @@ public class EventController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteEvent(Guid id)
     {
-        var success = await _eventService.DeleteEventAsync(id);
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdStr, out var userId))
+            return Unauthorized();
+        var success = await _eventService.DeleteEventAsync(id, userId);
         if (!success)
             return NotFound();
         return Ok(new { message = "Event deleted successfully" });
