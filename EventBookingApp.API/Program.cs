@@ -1,5 +1,4 @@
 using EventBookingApp.Application.Interfaces;
-using EventBookingApp.Infrastructure;
 using EventBookingApp.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,11 +26,15 @@ if (string.IsNullOrEmpty(connectionString))
 // Register services
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddSingleton<IWalletService, WalletService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Optional: test database connection on startup
+// test database connection on startup
 // try
 // {
 //     using (var scope = app.Services.CreateScope())
@@ -39,17 +42,17 @@ var app = builder.Build();
 //         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 //         if (db.Database.CanConnect())
 //         {
-//             Console.WriteLine("✅ Connected to MySQL!");
+//             Console.WriteLine(" Connected to MySQL!");
 //         }
 //         else
 //         {
-//             Console.WriteLine("❌ Failed to connect.");
+//             Console.WriteLine(" Failed to connect.");
 //         }
 //     }
 // }
 // catch (Exception ex)
 // {
-//     Console.WriteLine($"❌ DB error: {ex.Message}");
+//     Console.WriteLine($" DB error: {ex.Message}");
 // }
 
 // Middleware pipeline

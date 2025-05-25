@@ -1,6 +1,5 @@
 using EventBookingApp.Application.DTOs;
 using EventBookingApp.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventBookingApp.API.Controllers;
