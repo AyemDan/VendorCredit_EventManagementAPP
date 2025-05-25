@@ -16,6 +16,5 @@ namespace EventBookingApp.Domain.Entities
         public int Capacity { get; set; }
 
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
-        public List<TicketCategory> TicketCategories { get; set; } = new();
     }
 }

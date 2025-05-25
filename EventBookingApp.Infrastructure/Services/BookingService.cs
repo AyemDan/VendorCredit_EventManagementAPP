@@ -79,14 +79,13 @@ public class BookingService : IBookingService
 {
     private readonly List<Booking> _bookings = new();
 
-    public Task<BookingDto> CreateBookingAsync(CreateBookingDto dto, string userId)
+    public Task<BookingDto> CreateBookingAsync(CreateBookingDto dto, Guid userId)
     {
         var booking = new Booking
         {
             Id = Guid.NewGuid(),
             UserId = userId,
             EventId = dto.EventId,
-            TicketCategoryId = dto.TicketCategoryId,
             Quantity = dto.Quantity,
             BookedAt = DateTime.UtcNow,
         };
@@ -98,7 +97,6 @@ public class BookingService : IBookingService
             Id = booking.Id,
             UserId = booking.UserId,
             EventId = booking.EventId,
-            TicketCategoryId = booking.TicketCategoryId,
             Quantity = booking.Quantity,
             BookedAt = booking.BookedAt,
         };
@@ -106,7 +104,7 @@ public class BookingService : IBookingService
         return Task.FromResult(result);
     }
 
-    public Task<IEnumerable<BookingDto>> GetBookingsByUserAsync(string userId)
+    public Task<IEnumerable<BookingDto>> GetBookingsByUserAsync(Guid userId)
     {
         var bookings = _bookings
             .Where(b => b.UserId == userId && !b.IsCancelled)
@@ -115,7 +113,6 @@ public class BookingService : IBookingService
                 Id = b.Id,
                 UserId = b.UserId,
                 EventId = b.EventId,
-                TicketCategoryId = b.TicketCategoryId,
                 Quantity = b.Quantity,
                 BookedAt = b.BookedAt,
             });
@@ -123,7 +120,7 @@ public class BookingService : IBookingService
         return Task.FromResult(bookings);
     }
 
-    public Task<bool> CancelBookingAsync(Guid bookingId, string userId, string? reason)
+    public Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, string? reason)
     {
         var booking = _bookings.FirstOrDefault(b => b.Id == bookingId && b.UserId == userId);
 

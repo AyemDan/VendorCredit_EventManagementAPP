@@ -1,6 +1,10 @@
+using System.Text;
 using EventBookingApp.Application.Interfaces;
+using EventBookingApp.Infrastructure;
 using EventBookingApp.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +26,7 @@ if (string.IsNullOrEmpty(connectionString))
 // builder.Services.AddDbContext<AppDbContext>(options =>
 //     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString))
 // );
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 // Register services
 builder.Services.AddScoped<IEventService, EventService>();
@@ -29,7 +34,28 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddSingleton<IWalletService, WalletService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddAuthentication();
+builder
+    .Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            ),
+        };
+    });
+
 builder.Services.AddAuthorization();
 
 var app = builder.Build();

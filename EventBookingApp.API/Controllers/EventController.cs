@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using EventBookingApp.Application.DTOs;
 using EventBookingApp.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventBookingApp.API.Controllers;
@@ -16,12 +18,14 @@ public class EventController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateEvent([FromBody] CreateEventDto dto)
+    [Authorize]
+    public async Task<IActionResult> CreateEvent(CreateEventDto dto)
     {
-        var userId = User.FindFirst("id")?.Value;
+        var organizerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        var created = await _eventService.CreateEventAsync(dto, userId);
-        return CreatedAtAction(nameof(GetEventById), new { id = created.Id }, created);
+        var createdEvent = await _eventService.CreateEventAsync(dto, organizerId);
+
+        return Ok(createdEvent);
     }
 
     [HttpGet]
@@ -43,7 +47,11 @@ public class EventController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateEvent(Guid id, [FromBody] UpdateEventDto dto)
     {
-        var updated = await _eventService.UpdateEventAsync(id, dto);
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!Guid.TryParse(userIdStr, out var userId))
+            return Unauthorized();
+
+        var updated = await _eventService.UpdateEventAsync(id, dto, userId);
         if (updated == null)
             return NotFound();
         return Ok(updated);

@@ -23,7 +23,9 @@ public class BookingController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var booking = await _bookingService.CreateBookingAsync(dto, userId);
+        if (!Guid.TryParse(userId, out var userGuid))
+            return BadRequest("Invalid user ID");
+        var booking = await _bookingService.CreateBookingAsync(dto, userGuid);
         return Ok(booking);
     }
 
@@ -34,7 +36,10 @@ public class BookingController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var bookings = await _bookingService.GetBookingsByUserAsync(userId);
+        if (!Guid.TryParse(userId, out var userGuid))
+            return BadRequest("Invalid user ID");
+
+        var bookings = await _bookingService.GetBookingsByUserAsync(userGuid);
         return Ok(bookings);
     }
 
@@ -45,7 +50,10 @@ public class BookingController : ControllerBase
         if (userId == null)
             return Unauthorized();
 
-        var success = await _bookingService.CancelBookingAsync(bookingId, userId);
+        if (!Guid.TryParse(userId, out var userGuid))
+            return BadRequest("Invalid user ID");
+
+        var success = await _bookingService.CancelBookingAsync(bookingId, userGuid);
         if (!success)
             return NotFound();
 

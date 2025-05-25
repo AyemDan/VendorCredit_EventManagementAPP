@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Text;
 using EventBookingApp.Application.DTOs;
 using EventBookingApp.Application.Interfaces;
+using EventBookingApp.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -10,36 +12,43 @@ namespace EventBookingApp.Infrastructure.Services;
 
 public class AuthService : IAuthService
 {
-    private static readonly Dictionary<string, string> _users = new();
+    private readonly AppDbContext _context;
     private readonly IConfiguration _config;
 
-    public AuthService(IConfiguration config)
+    public AuthService(IConfiguration config, AppDbContext context)
     {
         _config = config;
+        _context = context;
     }
 
-    public Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
+    public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto)
     {
-        if (_users.ContainsKey(dto.Email))
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (existingUser != null)
             throw new Exception("User already exists");
 
-        _users[dto.Email] = dto.Password;
-        return Task.FromResult(GenerateToken(dto.Email));
+        var newUser = new User { Email = dto.Email, PasswordHash = HashPassword(dto.Password) };
+
+        _context.Users.Add(newUser);
+        await _context.SaveChangesAsync();
+
+        return GenerateToken(newUser.Id, newUser.Email);
     }
 
-    public Task<AuthResponseDto> LoginAsync(LoginDto dto)
+    public async Task<AuthResponseDto> LoginAsync(LoginDto dto)
     {
-        if (!_users.ContainsKey(dto.Email) || _users[dto.Email] != dto.Password)
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+        if (user == null || !VerifyPassword(dto.Password, user.PasswordHash))
             throw new Exception("Invalid credentials");
 
-        return Task.FromResult(GenerateToken(dto.Email));
+        return GenerateToken(user.Id, user.Email);
     }
 
-    private AuthResponseDto GenerateToken(string email)
+    private AuthResponseDto GenerateToken(Guid userId, string email)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, email),
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
             new Claim(ClaimTypes.Name, email),
         };
 
@@ -55,5 +64,19 @@ public class AuthService : IAuthService
         );
 
         return new AuthResponseDto { Token = new JwtSecurityTokenHandler().WriteToken(token) };
+    }
+
+    // Simple hashing example, replace with a strong hashing like BCrypt or Argon2 in production!
+    private string HashPassword(string password)
+    {
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        var bytes = Encoding.UTF8.GetBytes(password);
+        var hash = sha.ComputeHash(bytes);
+        return Convert.ToBase64String(hash);
+    }
+
+    private bool VerifyPassword(string password, string storedHash)
+    {
+        return HashPassword(password) == storedHash;
     }
 }

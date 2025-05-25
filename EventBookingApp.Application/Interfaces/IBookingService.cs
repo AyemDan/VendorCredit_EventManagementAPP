@@ -1,10 +1,10 @@
-namespace EventBookingApp.Application.Interfaces;
-
 using EventBookingApp.Application.DTOs;
+
+namespace EventBookingApp.Application.Interfaces;
 
 public interface IBookingService
 {
-    Task<BookingDto> CreateBookingAsync(CreateBookingDto dto, string userId);
-    Task<IEnumerable<BookingDto>> GetBookingsByUserAsync(string userId);
-    Task<bool> CancelBookingAsync(Guid bookingId, string userId, string? reason = null);
+    Task<BookingDto> CreateBookingAsync(CreateBookingDto dto, Guid userId);
+    Task<IEnumerable<BookingDto>> GetBookingsByUserAsync(Guid userId);
+    Task<bool> CancelBookingAsync(Guid bookingId, Guid userId, string? reason = null);
 }
