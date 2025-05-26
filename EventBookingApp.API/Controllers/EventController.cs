@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using EventBookingApp.Application.DTOs;
+using EventBookingApp.Application.Enums;
 using EventBookingApp.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,10 +64,14 @@ public class EventController : ControllerBase
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!Guid.TryParse(userIdStr, out var userId))
             return Unauthorized();
-        var success = await _eventService.DeleteEventAsync(id, userId);
-        if (!success)
-            return NotFound();
-        return Ok(new { message = "Event deleted successfully" });
+
+        var result = await _eventService.DeleteEventAsync(id, userId);
+        return result switch
+        {
+            DeleteEventResult.NotFound => NotFound(),
+            DeleteEventResult.Unauthorized => Unauthorized(),
+            _ => Ok(new { message = "Event deleted successfully" }),
+        };
     }
 
     // [HttpGet("organizer/{organizerId}")]

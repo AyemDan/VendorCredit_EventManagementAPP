@@ -1,4 +1,5 @@
 using EventBookingApp.Application.DTOs;
+using EventBookingApp.Application.Enums;
 using EventBookingApp.Application.Interfaces;
 using EventBookingApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -66,18 +67,18 @@ public class EventService : IEventService
         return ToDto(evt);
     }
 
-    public async Task<bool> DeleteEventAsync(Guid id, Guid userId)
+    public async Task<DeleteEventResult> DeleteEventAsync(Guid id, Guid userId)
     {
         var evt = await _context.Events.FindAsync(id);
         if (evt == null)
-            return false;
+            return DeleteEventResult.NotFound;
 
         if (evt.OrganizerId != userId.ToString())
-            return false;
+            return DeleteEventResult.Unauthorized;
 
         _context.Events.Remove(evt);
         await _context.SaveChangesAsync();
-        return true;
+        return DeleteEventResult.Success;
     }
 
     public async Task<IEnumerable<EventDto>> GetEventsByOrganizerAsync(string organizerId)
