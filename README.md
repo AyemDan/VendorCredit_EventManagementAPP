@@ -29,11 +29,11 @@ An event booking API built with **ASP.NET Core 8** and **PostgreSQL**. This appl
 
 ---
 
-## 🐳 Getting Started (Dockerized Setup)
+## 🐳 Getting Started (Dockerized Setup) Option 1
 
 This project is set up to be launched effortlessly using Docker Compose, providing a consistent development environment.
 
-### 📦 1. Clone the Project
+###  1. Clone the Project
 
 First, get a copy of the repository:
 
@@ -41,13 +41,14 @@ First, get a copy of the repository:
 git clone [https://github.com/your-username/EventBookingApp.git](https://github.com/your-username/EventBookingApp.git)
 cd EventBookingApp
 ---
-
-## 🚀 2. Launch with Docker Compose
+```
+###  2. Launch with Docker Compose
 
 From the root of the `EventBookingApp` directory, run the following command:
 
 ```bash
 docker-compose up --build
+```
 
 
 This command will:
@@ -58,18 +59,32 @@ This command will:
    - Launch the ASP.NET Core API server.
 
     The API server should be accessible at:
-    http://localhost:5000 
-    '''
-
+    http://localhost:5128
 ---
 
-## ⚙️ Configuration
+## Getting Started (Local Setup) Option 2
 
-The application uses `appsettings.json` for configuration. For Dockerized setup, sensitive information like database credentials should ideally be managed via **environment variables** or Docker secrets, but for local development, `appsettings.json` is sufficient.
+First, get a copy of the repository:
 
-### Database Connection
+```bash
+git clone [https://github.com/your-username/EventBookingApp.git](https://github.com/your-username/EventBookingApp.git)
+cd EventBookingApp
+---
+```
+###  2. Download Dependencies and build 
 
-Ensure your `appsettings.json` in `EventBookingApp.API` has the correct PostgreSQL connection string:
+```bash
+dotnet build
+```
+
+
+####  Configuration
+
+The application uses `appsettings.development.json` or  `appsettings.json` for configuration. For Dockerized setup, sensitive information like database credentials should ideally be managed via **environment variables** or Docker secrets, but for local development, `appsettings.json` is sufficient.
+
+#### Database Connection
+
+Ensure your `appsettings.development.json` in `EventBookingApp.API` has the correct PostgreSQL connection string:
 
 ```json
 {
@@ -78,19 +93,21 @@ Ensure your `appsettings.json` in `EventBookingApp.API` has the correct PostgreS
   },
   // ... other settings
 }
+```
 Replace your_postgres_db, your_username, and your_password with your actual database credentials.
 
-API Usage
+#### API Usage
 The application uses JWT Bearer Authentication for most of its endpoints.
 
-Register/Login: Start by registering a new user or logging in to obtain a JWT token. This token will be required for accessing protected resources.
-Include Token: Include the obtained JWT token in the Authorization header of your subsequent API requests, prefixed with Bearer (e.g., Authorization: Bearer <your_jwt_token>).
+- Register/Login: Start by registering a new user or logging in to obtain a JWT token. This token will be required for accessing protected resources.
+- Include Token: Include the obtained JWT token in the Authorization header of your subsequent API requests, prefixed with Bearer (e.g., Authorization: Bearer <your_jwt_token>).
 API Documentation (Swagger)
-Once the application is running, you can explore the API endpoints and test them interactively using Swagger UI:
+- Once the application is running, you can explore the API endpoints and test them interactively using Swagger UI:
 
 http://localhost:5128/swagger
 
-🔄 EF Core Migrations (Manual)
+
+#### 🔄 EF Core Migrations (Manual)
 While docker-compose up typically handles migrations, if you need to manage them manually (e.g., adding new migrations, removing, or updating to specific versions), you can do so from within the running api container.
 
 Navigate to your solution root directory in your terminal before running these commands.
