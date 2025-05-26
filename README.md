@@ -169,4 +169,7 @@ You can easily test all endpoints using our pre-configured Postman collection.
 just make sure to put {{authToken}} in the token area of the Authorization section. So you can Skip number 2 & 3
 
 ---
-d
+> ⚠️ **Important Note:**  
+> No matter which setup method you choose (Docker or Local), **you must run Entity Framework Core migrations** to ensure the database schema is correctly created or updated.
+>
+---
