@@ -4,7 +4,7 @@ An event booking API built with **ASP.NET Core 8** and **PostgreSQL**. This appl
 
 ---
 
-## ✨ Features
+## Features
 
 * **User Authentication & Authorization**: Secure access to API endpoints using JWT Bearer tokens.
 * **Event Management**: Create, view, update, and delete events.
@@ -17,7 +17,7 @@ An event booking API built with **ASP.NET Core 8** and **PostgreSQL**. This appl
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 * [.NET 8](https://dotnet.microsoft.com/)
 * [Entity Framework Core](https://learn.microsoft.com/en-us/ef/) for ORM
@@ -29,7 +29,7 @@ An event booking API built with **ASP.NET Core 8** and **PostgreSQL**. This appl
 
 ---
 
-## 🐳 Getting Started (Dockerized Setup) Option 1
+## Getting Started (Dockerized Setup) Option 1
 
 This project is set up to be launched effortlessly using Docker Compose, providing a consistent development environment.
 
@@ -50,7 +50,6 @@ From the root of the `EventBookingApp` directory, run the following command:
 docker-compose up --build
 ```
 
-
 This command will:
 
    - Build the .NET 8 API application's Docker image.
@@ -60,14 +59,24 @@ This command will:
 
     The API server should be accessible at:
     http://localhost:5128
+
 ---
 
 ## Getting Started (Local Setup) Option 2
 
+### ✅ Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download)
+- [PostgreSQL](https://www.postgresql.org/download/)
+- A tool like [pgAdmin](https://www.pgadmin.org/) (optional, for DB visualization)
+
+---
+###  1. Clone the Project
+
 First, get a copy of the repository:
 
 ```bash
-git clone [https://github.com/your-username/EventBookingApp.git](https://github.com/your-username/EventBookingApp.git)
+git clone [https://github.com/AyemDan/VendorCredit_EventManagementAPP.git]
 cd EventBookingApp
 ---
 ```
@@ -75,12 +84,24 @@ cd EventBookingApp
 
 ```bash
 dotnet build
+dotnet ef migrations add InitialMigration
+dotnet ef database update \
+  --project EventBookingApp.Infrastructure \
+  --startup-project EventBookingApp.API
+
+cd EventBookingApp.API
+dotnet run --Project EventBookingApp.API.csproj
+
+
 ```
 
+---
 
 ####  Configuration
 
 The application uses `appsettings.development.json` or  `appsettings.json` for configuration. For Dockerized setup, sensitive information like database credentials should ideally be managed via **environment variables** or Docker secrets, but for local development, `appsettings.json` is sufficient.
+
+---
 
 #### Database Connection
 
@@ -96,6 +117,8 @@ Ensure your `appsettings.development.json` in `EventBookingApp.API` has the corr
 ```
 Replace your_postgres_db, your_username, and your_password with your actual database credentials.
 
+---
+
 #### API Usage
 The application uses JWT Bearer Authentication for most of its endpoints.
 
@@ -106,6 +129,7 @@ API Documentation (Swagger)
 
 http://localhost:5128/swagger
 
+---
 
 #### 🔄 EF Core Migrations (Manual)
 While docker-compose up typically handles migrations, if you need to manage them manually (e.g., adding new migrations, removing, or updating to specific versions), you can do so from within the running api container.
@@ -113,17 +137,37 @@ While docker-compose up typically handles migrations, if you need to manage them
 Navigate to your solution root directory in your terminal before running these commands.
 
 Add a New Migration
-Bash
+```bash
 
 docker-compose exec api dotnet ef migrations add YourMigrationName \
   --project EventBookingApp.Infrastructure \
   --startup-project EventBookingApp.API
-Apply Pending Migrations
-Bash
 
 docker-compose exec api dotnet ef database update \
   --project EventBookingApp.Infrastructure \
   --startup-project EventBookingApp.API
 🤝 Contributing
-Contributions are welcome! If you have suggestions or find issues, please open an issue or submit a pull request.
+```
+---
 
+## Testing with Postman
+
+You can easily test all endpoints using our pre-configured Postman collection.
+
+###  Postman Collection
+
+ [Click here to open the Postman Collection](https://www.postman.com/speeding-astronaut-625283/workspace/eventapptest/collection/25140662-46ddf63a-5a77-4ef5-aa0e-a46aeaea9ab8?action=share&creator=25140662)
+
+
+### 🛡 Authentication
+
+1. Register or login via the `/api/auth/register` or `/api/auth/login` endpoint.
+2. Copy the JWT token from the response.
+3. In Postman, click **Authorization** tab → Select **Bearer Token** → Paste your token.
+4. You're now authenticated and can access all protected routes!
+
+>Note : A Script hass already been made to copy the token into the "authToken" variable
+just make sure to put {{authToken}} in the token area of the Authorization section. Skip number 2
+
+---
+d
