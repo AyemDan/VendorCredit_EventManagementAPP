@@ -1,22 +1,33 @@
-# ---- Build Stage ----
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-COPY *.sln ./
-COPY EventBookingApp.API/*.csproj ./EventBookingApp.API/
-COPY EventBookingApp.Application/*.csproj ./EventBookingApp.Application/
-COPY EventBookingApp.Infrastructure/*.csproj ./EventBookingApp.Infrastructure/
-COPY EventBookingApp.Domain/*.csproj ./EventBookingApp.Domain/
+COPY ["EventBookingApp.sln", "./"]
+COPY ["EventBookingApp.API/", "EventBookingApp.API/"]
+COPY ["EventBookingApp.Application/", "EventBookingApp.Application/"]
+COPY ["EventBookingApp.Infrastructure/", "EventBookingApp.Infrastructure/"]
+COPY ["EventBookingApp.Domain/", "EventBookingApp.Domain/"]
 
-RUN dotnet restore
+# Restore NuGet packages for the entire solution
+RUN dotnet restore "EventBookingApp.sln"
 
 COPY . .
-WORKDIR /src/EventBookingApp.API
-RUN dotnet publish -c Release -o /app/publish
 
-# ---- Runtime Stage ----
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Install EF Core CLI tools globally in the build stage
+RUN dotnet tool install --global dotnet-ef --version 9.0.5
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Set working directory to the API project for context-sensitive operations
+WORKDIR /src/EventBookingApp.API
+
+RUN dotnet ef database update \
+    --project ../EventBookingApp.Infrastructure/EventBookingApp.Infrastructure.csproj \
+    --startup-project EventBookingApp.API.csproj
+
+RUN dotnet publish -c Release -o /app/publish --no-restore # --no-restore because we already restored globally
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+
 COPY --from=build /app/publish .
 
 ENV ASPNETCORE_URLS=http://+:5128

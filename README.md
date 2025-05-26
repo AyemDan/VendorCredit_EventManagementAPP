@@ -170,6 +170,6 @@ just make sure to put {{authToken}} in the token area of the Authorization secti
 
 ---
 > ⚠️ **Important Note:**  
-> No matter which setup method you choose (Docker or Local), **you must run Entity Framework Core migrations** to ensure the database schema is correctly created or updated.
+> No matter which setup method you choose (Docker or Local), **you must run Entity Framework Core migrations** to ensure the database schema is correctly created or updated. If you dont it wont work properly.
 >
 ---

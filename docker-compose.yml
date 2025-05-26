@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16
@@ -22,13 +20,19 @@ services:
       - "5128:5128"
     depends_on:
       - db
+    volumes:
+      - .:/src
+    stdin_open: true
+    tty: true
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=eventbooking;Username=postgres;Password=postgres
       - ASPNETCORE_ENVIRONMENT=Development
+      - DOTNET_ROOT=/usr/share/dotnet
+      - PATH=$PATH:/root/.dotnet/tools
     command: >
       sh -c "
-      dotnet ef database update --project EventBookingApp.Infrastructure &&
-      dotnet ef migrations add InitialCreate --project EventBookingApp.Infrastructure &&
+      dotnet tool install --global dotnet-ef &&
+      dotnet ef database update --project EventBookingApp.Infrastructure --startup-project EventBookingApp.API &&
       dotnet EventBookingApp.API.dll
       "
 
