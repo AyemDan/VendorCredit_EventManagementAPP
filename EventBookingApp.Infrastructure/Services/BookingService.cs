@@ -14,41 +14,107 @@ public class BookingService : IBookingService
         _context = context;
     }
 
-    public async Task<BookingDto> CreateBookingAsync(CreateBookingDto dto, Guid userId)
+    public async Task<BookingDto> CreateBookingAsync(
+        Guid eventId,
+        CreateBookingDto dto,
+        Guid userId
+    )
     {
-        var booking = new Booking
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            EventId = dto.EventId,
-            Quantity = dto.Quantity,
-            BookedAt = DateTime.UtcNow,
-        };
+        using var transaction = await _context.Database.BeginTransactionAsync();
 
-        _context.Bookings.Add(booking);
-        await _context.SaveChangesAsync();
+        var userWallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId);
+        if (userWallet == null)
+            throw new Exception("User wallet not found.");
 
-        return new BookingDto
+        var evt = await _context.Events.FirstOrDefaultAsync(e => e.Id == eventId);
+        if (evt == null)
+            throw new Exception("Event not found.");
+
+        // Check existing booking for this user & event
+        var existingBooking = await _context.Bookings.FirstOrDefaultAsync(b =>
+            b.UserId == userId && b.EventId == eventId && !b.IsCancelled
+        );
+
+        int totalQuantityRequested = dto.Quantity;
+        if (existingBooking != null)
+            totalQuantityRequested += existingBooking.Quantity;
+
+        if (evt.Capacity < totalQuantityRequested)
+            throw new Exception("Not enough tickets available for this event.");
+
+        decimal totalCost = evt.Price * dto.Quantity;
+
+        if (userWallet.Balance < totalCost)
+            throw new Exception("Insufficient funds in wallet.");
+
+        try
         {
-            Id = booking.Id,
-            UserId = booking.UserId,
-            EventId = booking.EventId,
-            Quantity = booking.Quantity,
-            BookedAt = booking.BookedAt,
-        };
+            userWallet.Balance -= totalCost;
+            _context.Wallets.Update(userWallet);
+
+            if (existingBooking != null)
+            {
+                existingBooking.Quantity += dto.Quantity;
+                _context.Bookings.Update(existingBooking);
+            }
+            else
+            {
+                var booking = new Booking
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userId,
+                    EventId = evt.Id,
+                    Quantity = dto.Quantity,
+                    BookedAt = DateTime.UtcNow,
+                    IsCancelled = false,
+                };
+                _context.Bookings.Add(booking);
+                existingBooking = booking;
+            }
+
+            evt.Capacity -= dto.Quantity;
+            _context.Events.Update(evt);
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return new BookingDto
+            {
+                Id = existingBooking.Id,
+                UserId = existingBooking.UserId,
+                EventId = existingBooking.EventId,
+                EventTitle = evt.Title,
+                Quantity = existingBooking.Quantity,
+                BookedAt = existingBooking.BookedAt,
+                IsCancelled = existingBooking.IsCancelled,
+                CancelReason = existingBooking.CancelReason,
+                CancelledAt = existingBooking.CancelledAt,
+                Event = evt,
+            };
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     public async Task<IEnumerable<BookingDto>> GetBookingsByUserAsync(Guid userId)
     {
         return await _context
-            .Bookings.Where(b => b.UserId == userId)
+            .Bookings.Include(b => b.Event)
+            .Where(b => b.UserId == userId)
             .Select(b => new BookingDto
             {
                 Id = b.Id,
                 UserId = b.UserId,
                 EventId = b.EventId,
+                EventTitle = b.Event.Title,
                 Quantity = b.Quantity,
                 BookedAt = b.BookedAt,
+                IsCancelled = b.IsCancelled,
+                CancelReason = b.CancelReason,
+                CancelledAt = b.CancelledAt,
             })
             .ToListAsync();
     }

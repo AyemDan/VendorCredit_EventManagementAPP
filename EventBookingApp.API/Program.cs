@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using EventBookingApp.Application.Interfaces;
 using EventBookingApp.Infrastructure;
 using EventBookingApp.Infrastructure.Services;
@@ -11,7 +12,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(opts =>
+    {
+        opts.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+        opts.JsonSerializerOptions.WriteIndented = true;
+    });
 
 // Get connection string
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -31,7 +38,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connect
 // Register services
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddSingleton<IWalletService, WalletService>();
+builder.Services.AddScoped<IWalletService, WalletService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder

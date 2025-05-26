@@ -27,7 +27,12 @@ public class AuthService : IAuthService
         if (existingUser != null)
             throw new Exception("User already exists");
 
-        var newUser = new User { Email = dto.Email, PasswordHash = HashPassword(dto.Password) };
+        var newUser = new User
+        {
+            Email = dto.Email,
+            PasswordHash = HashPassword(dto.Password),
+            Wallet = new Wallet { Balance = 5000 },
+        };
 
         _context.Users.Add(newUser);
         await _context.SaveChangesAsync();

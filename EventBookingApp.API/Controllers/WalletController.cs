@@ -1,4 +1,6 @@
-using EventBookingApp.Application.DTOs;
+using System;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using EventBookingApp.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,20 +17,31 @@ public class WalletController : ControllerBase
         _walletService = walletService;
     }
 
-    [HttpPost("top-up")]
-    public IActionResult TopUp([FromBody] decimal amount)
+    private Guid GetUserId()
     {
-        var userId = "mock-user-id"; // Replace with real userId when auth is in
-        _walletService.TopUp(userId, amount);
-        var balance = _walletService.GetBalance(userId);
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            throw new Exception("User ID not found or invalid.");
+        return userId;
+    }
+
+    [HttpPost("top-up")]
+    public async Task<IActionResult> TopUp([FromBody] decimal amount)
+    {
+        var userId = GetUserId();
+
+        await _walletService.TopUpAsync(userId, amount);
+        var balance = await _walletService.GetBalanceAsync(userId);
+
         return Ok(new { Message = "Top-up successful", Balance = balance });
     }
 
     [HttpGet("balance")]
-    public IActionResult GetBalance()
+    public async Task<IActionResult> GetBalance()
     {
-        var userId = "mock-user-id";
-        var balance = _walletService.GetBalance(userId);
+        var userId = GetUserId();
+
+        var balance = await _walletService.GetBalanceAsync(userId);
         return Ok(new { Balance = balance });
     }
 }

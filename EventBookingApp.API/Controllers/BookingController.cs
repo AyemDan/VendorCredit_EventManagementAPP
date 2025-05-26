@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using EventBookingApp.Application.DTOs;
 using EventBookingApp.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -16,27 +17,31 @@ public class BookingController : ControllerBase
         _bookingService = bookingService;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> Book(CreateBookingDto dto)
+    [HttpPost("{eventId}")]
+    public async Task<IActionResult> Book(Guid eventId, CreateBookingDto dto)
     {
-        var userId = User.Identity?.Name;
-        if (userId == null)
+        var userIdClaim = User
+            .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+            ?.Value;
+        if (userIdClaim == null)
             return Unauthorized();
 
-        if (!Guid.TryParse(userId, out var userGuid))
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
             return BadRequest("Invalid user ID");
-        var booking = await _bookingService.CreateBookingAsync(dto, userGuid);
+        var booking = await _bookingService.CreateBookingAsync(eventId, dto, userGuid);
         return Ok(booking);
     }
 
     [HttpGet("my-bookings")]
     public async Task<IActionResult> MyBookings()
     {
-        var userId = User.Identity?.Name;
-        if (userId == null)
+        var userIdClaim = User
+            .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+            ?.Value;
+        if (userIdClaim == null)
             return Unauthorized();
 
-        if (!Guid.TryParse(userId, out var userGuid))
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
             return BadRequest("Invalid user ID");
 
         var bookings = await _bookingService.GetBookingsByUserAsync(userGuid);
@@ -46,11 +51,13 @@ public class BookingController : ControllerBase
     [HttpDelete("{bookingId}")]
     public async Task<IActionResult> CancelBooking(Guid bookingId)
     {
-        var userId = User.Identity?.Name;
-        if (userId == null)
+        var userIdClaim = User
+            .Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)
+            ?.Value;
+        if (userIdClaim == null)
             return Unauthorized();
 
-        if (!Guid.TryParse(userId, out var userGuid))
+        if (!Guid.TryParse(userIdClaim, out var userGuid))
             return BadRequest("Invalid user ID");
 
         var success = await _bookingService.CancelBookingAsync(bookingId, userGuid);
@@ -60,3 +67,4 @@ public class BookingController : ControllerBase
         return Ok(new { message = "Booking cancelled successfully" });
     }
 }
+

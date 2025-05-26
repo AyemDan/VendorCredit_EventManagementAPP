@@ -2,7 +2,7 @@ namespace EventBookingApp.Application.Interfaces;
 
 public interface IWalletService
 {
-    decimal GetBalance(string userId);
-    void TopUp(string userId, decimal amount);
-    bool Deduct(string userId, decimal amount);
+    Task<decimal> GetBalanceAsync(Guid userId);
+    Task TopUpAsync(Guid userId, decimal amount);
+    Task<bool> DeductAsync(Guid userId, decimal amount);
 }

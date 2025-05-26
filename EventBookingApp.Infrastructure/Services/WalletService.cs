@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using EventBookingApp.Application.DTOs;
 using EventBookingApp.Application.Interfaces;
 using EventBookingApp.Domain.Entities;
@@ -7,29 +9,46 @@ namespace EventBookingApp.Infrastructure.Services;
 
 public class WalletService : IWalletService
 {
-    private readonly Dictionary<string, Wallet> _wallets = new();
+    private readonly AppDbContext _context;
 
-    public decimal GetBalance(string userId)
+    public WalletService(AppDbContext context)
     {
-        if (_wallets.TryGetValue(userId, out var wallet))
-            return wallet.Balance;
-        return 0;
+        _context = context;
     }
 
-    public void TopUp(string userId, decimal amount)
+    public async Task<decimal> GetBalanceAsync(Guid userId)
     {
-        if (!_wallets.ContainsKey(userId))
-            _wallets[userId] = new Wallet { UserId = Guid.Parse(userId), Balance = 0 };
+        var wallet = await _context
+            .Wallets.AsNoTracking()
+            .FirstOrDefaultAsync(w => w.UserId == userId);
 
-        _wallets[userId].Balance += amount;
+        return wallet?.Balance ?? 0;
     }
 
-    public bool Deduct(string userId, decimal amount)
+    public async Task TopUpAsync(Guid userId, decimal amount)
     {
-        if (!_wallets.ContainsKey(userId) || _wallets[userId].Balance < amount)
+        var wallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId);
+
+        if (wallet == null)
+        {
+            wallet = new Wallet { UserId = userId, Balance = 0 };
+            _context.Wallets.Add(wallet);
+        }
+
+        wallet.Balance += amount;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeductAsync(Guid userId, decimal amount)
+    {
+        var wallet = await _context.Wallets.FirstOrDefaultAsync(w => w.UserId == userId);
+
+        if (wallet == null || wallet.Balance < amount)
             return false;
 
-        _wallets[userId].Balance -= amount;
+        wallet.Balance -= amount;
+        await _context.SaveChangesAsync();
+
         return true;
     }
 }
