@@ -141,12 +141,11 @@ Add a New Migration
 
 docker-compose exec api dotnet ef migrations add YourMigrationName \
   --project EventBookingApp.Infrastructure \
-  --startup-project EventBookingApp.API
+
 
 docker-compose exec api dotnet ef database update \
   --project EventBookingApp.Infrastructure \
-  --startup-project EventBookingApp.API
-🤝 Contributing
+
 ```
 ---
 
@@ -167,7 +166,7 @@ You can easily test all endpoints using our pre-configured Postman collection.
 4. You're now authenticated and can access all protected routes!
 
 >Note : A Script hass already been made to copy the token into the "authToken" variable
-just make sure to put {{authToken}} in the token area of the Authorization section. Skip number 2
+just make sure to put {{authToken}} in the token area of the Authorization section. So you can Skip number 2 & 3
 
 ---
 d
